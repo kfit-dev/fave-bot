@@ -1,3 +1,1 @@
-Slack.configure do |config|
-  config.token = 'xoxb-50624544118-vf66uCYShhuSjFuYxeVdJeYV'
-end
+require File.join(Rails.root, 'bot/github_observer')
