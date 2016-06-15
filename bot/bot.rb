@@ -1,12 +1,11 @@
 class Bot < SlackRubyBot::Bot
   command 'register' do |client, data, match|
     expression = match['expression']
-    user = User.new(channel_id: data.channel, github_username: expression)
     unless direct_message?(data)
       client.say(channel: data.channel, text: "Please register with direct message...")
       return
     end
-
+    user = User.new(channel_id: data.channel, github_username: expression)
     if user.save!
       client.say(channel: user.channel_id, text: "registered #{user.github_username}")
     else
@@ -18,20 +17,11 @@ class Bot < SlackRubyBot::Bot
     expression = match['expression']
     user = User.find_by(github_username: expression)
     if user.present?
-      user.delete_all
+      user.delete
       client.say(channel: user.channel_id, text: "goodbye my friend...")
-      
     else
       client.say(channel: user.channel_id, text: "i can't find #{expression}")
     end
-  end
-
-  command 'say' do |client, data, match|
-    client.say(channel: data.channel, text: "lala")
-  end
-
-  command 'hello' do |client, data, match|
-    client.say(channel: "@peiyee", text: "#{match['expression']}")
   end
 
   private
