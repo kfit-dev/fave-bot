@@ -1,1 +1,1 @@
-require File.join(Rails.root, 'bot/github_observer')
+require File.join(Rails.root, 'slack_github_observer/github_observer')

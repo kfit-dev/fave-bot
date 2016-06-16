@@ -21,8 +21,17 @@ class WebhookClient
   private
 
   def issue_comment_message
-    @client.chat_postMessage(channel: 'D1GJCSMHC', text: "#{@event}", as_user: true)
-    @client.chat_postMessage(channel: 'D1GJCSMHC', text: "#{@payload[:comment][:body]}", as_user: true)
+    comment_body = @payload[:comment][:body]
+    mentioned = comment_body.scan(/@\w+/)
+    if mentioned.present?
+      mentioned.each do |name|
+        name.slice!(0)
+        user = User.find_by(github_username: name)
+        next unless user.present?
+        @client.chat_postMessage(channel: user.channel_id, text: "#{@event}", as_user: true)
+        @client.chat_postMessage(channel: user.channel_id, text: "#{comment_body}", as_user: true)
+      end
+    end
   end
 
   def pull_request_review_comment_message
@@ -32,6 +41,6 @@ class WebhookClient
   end
 
   def unhandle_event_message
-    @client.chat_postMessage(channel: 'D1GJCSMHC', text: "#{@event}", as_user: true)
+    @client.chat_postMessage(channel: 'D1GJCSMHC', text: "unhandle webhook event: #{@event}", as_user: true)
   end
 end
