@@ -11,16 +11,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160614154654) do
+ActiveRecord::Schema.define(version: 20160618154654) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "bot_command_helps", force: :cascade do |t|
+    t.string   "command"
+    t.string   "description"
+    t.string   "long_description"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.string   "channel_id"
     t.string   "github_username"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
+    t.string   "slack_username"
   end
 
 end
