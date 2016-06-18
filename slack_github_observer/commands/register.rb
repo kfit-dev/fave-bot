@@ -1,7 +1,7 @@
 module SlackGithubObserver
   module Commands
     class Register < SlackRubyBot::Commands::Base
-      commands 'register'
+      command 'register'
       
       def self.call(client, data, match)
         expression = match['expression']
@@ -13,7 +13,7 @@ module SlackGithubObserver
           client.say(channel: data.channel, text: "Please register with your github user name. For more information please type help.")
           return
         end
-        user = User.new(channel_id: data.channel, github_username: expression)
+        user = User.new(channel_id: data.channel, github_username: expression, slack_username: data.user)
         if user.save!
           client.say(channel: user.channel_id, text: "registered #{user.github_username}")
         else

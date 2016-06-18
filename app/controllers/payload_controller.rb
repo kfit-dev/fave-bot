@@ -5,7 +5,7 @@ class PayloadController < ApplicationController
 
   def create
     event = request.headers["X-GitHub-Event"]
-    client = WebhookClient.new(params[:payload], event)
+    client = GithubWebhookClient.new(params[:payload], event)
     client.chat
     render plain: "ok"
   end
