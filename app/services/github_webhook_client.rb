@@ -54,11 +54,45 @@ class GithubWebhookClient
   end
 
   def pull_request_review_comment_message
-    @client.chat_postMessage(channel: "D1GJCSMHC", text: "#{@event}", as_user: true)
+    action = @payload[:action]
+    comment = @payload[:comment]
+    commenter = comment[:user][:login]
+    comment_url = comment[:html_url]
+    pr_title = @payload[:pull_request][:title]
+    comment_body = comment[:body]
+    pr_owner = @payload[:pull_request][:user][:login]
+    mentioned = comment_body.scan(/@\w+/)
+    comment_mention_message(commenter, comment_url, mentioned) if mentioned.present?
+    user = User.find_by_github_username(pr_owner)
+    return if user.nil? || commenter == "houndci-bot"
+      text = %Q(
+#{commenter} has #{action} a review comment.
+Comment: #{comment_body}.
+Pull Request: *#{pr_title}*.
+Url: #{comment_url})
+      @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+  end
+
+  def comment_mention_message(commenter, url, mentioned)
+    mentioned.each do |name|
+      name.slice!(0)
+      user = User.find_by(github_username: name)
+      next unless user.present?
+       text = %Q(
+#{commenter} has mentioned you in a comment.
+Url: #{url})
+    @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+    end
   end
 
   def commit_comment_message
-    @client.chat_postMessage(channel: "D1GJCSMHC", text: "#{@event}", as_user: true)
+    action = @payload[:action]
+    comment = @payload[:comment]
+    comment_url = comment[:html_url]
+    commenter = comment[:user][:login]
+    comment_body = comment[:body]
+    mentioned = comment_body.scan(/@\w+/)
+    comment_mention_message(commenter, comment_url, mentioned) if mentioned.present?
   end
 
   def unhandle_event_message
