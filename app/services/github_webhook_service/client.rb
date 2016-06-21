@@ -40,13 +40,22 @@ Url: #{comment.url})
     end
 
     def pull_request_message
-      if @action == "assigned"
-        parser = GithubWebhookService::Parser.new(pull_request: @payload[:pull_request])
-        pull_request = parser.pull_request
+      parser = GithubWebhookService::Parser.new(pull_request: @payload[:pull_request], sender: @payload[:sender])
+      pull_request = parser.pull_request
+      sender = parser.sender
+      case @action
+      when "assigned"
         user = User.find_by(github_username: pull_request.assignee)
         return if user.nil?
         text = %Q(
 #{pull_request.owner} has assigned you on pull request *#{pull_request.title}*.
+Url: #{pull_request.url})
+        post_message_as_user(user.channel_id, text)
+      when "closed"
+        user = User.find_by(github_username: pull_request.owner)
+        return if user.nil?
+        text = %Q(
+#{pull_request.title} has been closed by #{sender.name}
 Url: #{pull_request.url})
         post_message_as_user(user.channel_id, text)
       end
