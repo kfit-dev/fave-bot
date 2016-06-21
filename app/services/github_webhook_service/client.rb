@@ -30,7 +30,7 @@ module GithubWebhookService
       comment_mention_message(comment.commentter, comment.url, comment.mentioned) if comment.mentioned.present?
       issue = parser.issue
       user = User.find_by_github_username(issue.owner)
-      return if user.nil?
+      return if user.nil? || issue.owner == comment.commentter
       text = %Q(
 #{comment.commentter} has #{@action} a review comment.
 Comment: #{comment.body}.
@@ -67,7 +67,7 @@ Url: #{pull_request.url})
       pull_request = parser.pull_request
       comment_mention_message(comment.commentter, comment.url, comment.mentioned) if comment.mentioned.present?
       user = User.find_by_github_username(pull_request.owner)
-      return if user.nil? || comment.commentter == "houndci-bot"
+      return if user.nil? || comment.commentter == "houndci-bot" || pull_request.owner == comment.commentter
         text = %Q(
 #{comment.commentter} has #{@action} a review comment.
 Comment: #{comment.body}.
