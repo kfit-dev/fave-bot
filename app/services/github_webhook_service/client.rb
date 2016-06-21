@@ -36,7 +36,7 @@ module GithubWebhookService
 Comment: #{comment.body}.
 Pull Request: *#{issue.title}*
 Url: #{comment.url})
-      @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+      post_message_as_user(user.channel_id, text)
     end
 
     def pull_request_message
@@ -48,7 +48,7 @@ Url: #{comment.url})
         text = %Q(
 #{pull_request.owner} has assigned you on pull request *#{pull_request.title}*.
 Url: #{pull_request.url})
-        @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+        post_message_as_user(user.channel_id, text)
       end
     end
 
@@ -64,7 +64,7 @@ Url: #{pull_request.url})
 Comment: #{comment.body}.
 Pull Request: *#{pull_request.title}*.
 Url: #{comment.url})
-        @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+      post_message_as_user(user.channel_id, text: text)
     end
 
     def comment_mention_message(commenter, url, mentioned)
@@ -75,7 +75,7 @@ Url: #{comment.url})
          text = %Q(
 #{commenter} has mentioned you in a comment.
 Url: #{url})
-      @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+      post_message_as_user(user.channel_id, text: text)
       end
     end
 
@@ -86,7 +86,11 @@ Url: #{url})
     end
 
     def unhandle_event_message
-      @client.chat_postMessage(channel: 'D1GJCSMHC', text: "unhandle webhook event: #{@event}", as_user: true)
+      post_message_as_user('D1GJCSMHC', "unhandle webhook event: #{@event}")
+    end
+
+    def post_message_as_user(channel, text)
+    	@client.chat_postMessage(channel: channel, text: text, as_user: true)
     end
   end
 end
