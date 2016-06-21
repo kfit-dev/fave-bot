@@ -30,25 +30,34 @@ module GithubWebhookService
       comment_mention_message(comment.commentter, comment.url, comment.mentioned) if comment.mentioned.present?
       issue = parser.issue
       user = User.find_by_github_username(issue.owner)
-      return if user.nil?
+      return if user.nil? || issue.owner == comment.commentter
       text = %Q(
 #{comment.commentter} has #{@action} a review comment.
 Comment: #{comment.body}.
 Pull Request: *#{issue.title}*
 Url: #{comment.url})
-      @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+      post_message_as_user(user.channel_id, text)
     end
 
     def pull_request_message
-      if @action == "assigned"
-        parser = GithubWebhookService::Parser.new(pull_request: @payload[:pull_request])
-        pull_request = parser.pull_request
+      parser = GithubWebhookService::Parser.new(pull_request: @payload[:pull_request], sender: @payload[:sender])
+      pull_request = parser.pull_request
+      sender = parser.sender
+      case @action
+      when "assigned"
         user = User.find_by(github_username: pull_request.assignee)
         return if user.nil?
         text = %Q(
 #{pull_request.owner} has assigned you on pull request *#{pull_request.title}*.
 Url: #{pull_request.url})
-        @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+        post_message_as_user(user.channel_id, text)
+      when "closed"
+        user = User.find_by(github_username: pull_request.owner)
+        return if user.nil?
+        text = %Q(
+#{pull_request.title} has been closed by #{sender.name}
+Url: #{pull_request.url})
+        post_message_as_user(user.channel_id, text)
       end
     end
 
@@ -58,13 +67,13 @@ Url: #{pull_request.url})
       pull_request = parser.pull_request
       comment_mention_message(comment.commentter, comment.url, comment.mentioned) if comment.mentioned.present?
       user = User.find_by_github_username(pull_request.owner)
-      return if user.nil? || comment.commentter == "houndci-bot"
+      return if user.nil? || comment.commentter == "houndci-bot" || pull_request.owner == comment.commentter
         text = %Q(
 #{comment.commentter} has #{@action} a review comment.
 Comment: #{comment.body}.
 Pull Request: *#{pull_request.title}*.
 Url: #{comment.url})
-        @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+      post_message_as_user(user.channel_id, text: text)
     end
 
     def comment_mention_message(commenter, url, mentioned)
@@ -75,7 +84,7 @@ Url: #{comment.url})
          text = %Q(
 #{commenter} has mentioned you in a comment.
 Url: #{url})
-      @client.chat_postMessage(channel: user.channel_id, text: text, as_user: true)
+      post_message_as_user(user.channel_id, text: text)
       end
     end
 
@@ -86,7 +95,11 @@ Url: #{url})
     end
 
     def unhandle_event_message
-      @client.chat_postMessage(channel: 'D1GJCSMHC', text: "unhandle webhook event: #{@event}", as_user: true)
+      post_message_as_user('D1GJCSMHC', "unhandle webhook event: #{@event}")
+    end
+
+    def post_message_as_user(channel, text)
+    	@client.chat_postMessage(channel: channel, text: text, as_user: true)
     end
   end
 end
