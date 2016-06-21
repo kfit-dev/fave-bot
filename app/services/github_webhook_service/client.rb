@@ -43,7 +43,7 @@ Url: #{comment.url})
       if @action == "assigned"
         parser = GithubWebhookService::Parser.new(pull_request: @payload[:pull_request])
         pull_request = parser.pull_request
-        user = User.find_by(github_username: pull_request.owner)
+        user = User.find_by(github_username: pull_request.assignee)
         return if user.nil?
         text = %Q(
 #{pull_request.owner} has assigned you on pull request *#{pull_request.title}*.
