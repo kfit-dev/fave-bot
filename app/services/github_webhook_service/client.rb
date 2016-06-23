@@ -7,7 +7,6 @@ module GithubWebhookService
     end
 
     def chat
-      @client = Slack::Web::Client.new
       case @event
       when "issue_comment"
         issue_comment_message
@@ -81,10 +80,10 @@ Url: #{comment.url})
         name.slice!(0)
         user = User.find_by(github_username: name)
         next unless user.present?
-         text = %Q(
+        text = %Q(
 #{commenter} has mentioned you in a comment.
 Url: #{url})
-      post_message_as_user(user.channel_id, text: text)
+        post_message_as_user(user.channel_id, text)
       end
     end
 
@@ -99,7 +98,8 @@ Url: #{url})
     end
 
     def post_message_as_user(channel, text)
-    	@client.chat_postMessage(channel: channel, text: text, as_user: true)
+      client = Slack::Web::Client.new
+      client.chat_postMessage(channel: channel, text: text, as_user: true)
     end
   end
 end
