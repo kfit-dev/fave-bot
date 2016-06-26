@@ -17,6 +17,9 @@ group :development, :test do
 end
 
 group :development do
+  gem "capistrano"
+  gem "capistrano-rbenv"
+  gem "capistrano-rails"
   gem 'web-console', '~> 2.0'
   gem 'spring'
 end
