@@ -1,6 +1,3 @@
-# config valid only for current version of Capistrano
-lock '3.5.0'
-
 set :application, 'fave-bot'
 set :repo_url, 'git@github.com:kfit-dev/fave-bot.git'
 
@@ -28,12 +25,16 @@ set :rbenv_roles, :all # default value
 
 # Default value for :pty is false
 # set :pty, true
+# set :default_env, { 
+#   'SECRET_TOKEN' => '11fec345e6698aad04ee542601f0cb082e6c305s',
+#   'SLACK_API_TOKEN' => 'xoxb-50624544118-vf66uCYShhuSjFuYxeVdJeYV'
+# }
 
 # Default value for :linked_files is []
-# set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml')
+set :linked_files, fetch(:linked_files, []).push('config/database.yml')
 
 # Default value for linked_dirs is []
-# set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'public/system')
+set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'public/system')
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }

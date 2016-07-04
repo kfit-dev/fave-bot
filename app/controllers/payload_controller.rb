@@ -2,6 +2,9 @@ class PayloadController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_action :verify_signature, only: :create
 
+  def index
+  end
+  
   def create
     event = request.headers["X-GitHub-Event"]
     client = GithubWebhookService::Client.new(params[:payload], event)
