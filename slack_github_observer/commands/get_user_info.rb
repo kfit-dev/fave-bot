@@ -6,7 +6,7 @@ module SlackGithubObserver
         user = User.find_by(github_username: match['expression'])
         if user.present?
           text = "Channel id: #{user.channel_id}, Github: #{user.github_username}, Slack: <@#{user.slack_username}>"
-          client.say(channel: data.channel, text: "#{text}", gif: 'info')
+          client.say(channel: data.channel, text: "#{text}")
         else
           client.say(channel: data.channel, text: "Sorry this user #{match['expression']} cannot be found.")
         end
