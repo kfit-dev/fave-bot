@@ -5,5 +5,6 @@ require 'commands/unregister'
 require 'commands/get_user_info'
 require 'commands/help'
 require 'commands/add_help'
+require 'commands/how_are_you'
 #require 'commands/unknown'
 
