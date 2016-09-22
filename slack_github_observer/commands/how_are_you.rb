@@ -1,6 +1,6 @@
 module SlackGithubObserver
   module Commands
-    class Register < SlackRubyBot::Commands::Base
+    class HowAreYou < SlackRubyBot::Commands::Base
       command 'how are you?'
 
       def self.call(client, data, match)
