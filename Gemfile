@@ -1,6 +1,6 @@
-source 'https://rubygems.org'
-ruby '2.3.0'
-gem "therubyracer", platforms: :ruby
+source 'https://rubygems.org'.freeze
+ruby '2.3.1'
+gem 'therubyracer', platforms: :ruby
 gem 'rails', '4.2.6'
 gem 'pg', '~> 0.15'
 gem 'celluloid-io', require: ['celluloid/current', 'celluloid/io']
@@ -18,11 +18,10 @@ group :development, :test do
 end
 
 group :development do
-  gem "capistrano"
-  gem "capistrano-rbenv"
-  gem "capistrano-rails"
-  gem "capistrano-passenger"
+  gem 'capistrano'
+  gem 'capistrano-rbenv'
+  gem 'capistrano-rails'
+  gem 'capistrano-passenger'
   gem 'web-console', '~> 2.0'
   gem 'spring'
 end
-

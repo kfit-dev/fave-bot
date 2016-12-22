@@ -1,4 +1,5 @@
 module GithubWebhookService
+  # handling message send to slack
   class Client
     def initialize(payload, event)
       @payload = payload
@@ -8,14 +9,16 @@ module GithubWebhookService
 
     def chat
       case @event
-      when "issue_comment"
+      when 'issue_comment'
         issue_comment_message
-      when "pull_request_review_comment"
-        pull_request_review_comment_message
-      when "commit_comment"
+      when 'pull_request_review_comment'
+        pull_request_comment_message
+      when 'commit_comment'
         commit_comment_message
-      when "pull_request"
+      when 'pull_request'
         pull_request_message
+      when 'pull_request_review'
+        pull_request_review_message
       else
         unhandle_event_message
       end
@@ -30,7 +33,7 @@ module GithubWebhookService
       issue = parser.issue
       user = User.find_by_github_username(issue.owner)
       return if user.nil? || issue.owner == comment.commentter
-      text = %Q(
+      text = %(
 #{comment.commentter} has #{@action} a review comment.
 Comment: #{comment.body}.
 Pull Request: *#{issue.title}*
@@ -43,36 +46,55 @@ Url: #{comment.url})
       pull_request = parser.pull_request
       sender = parser.sender
       case @action
-      when "assigned"
+      when 'assigned'
         user = User.find_by(github_username: pull_request.assignee)
         return if user.nil?
-        text = %Q(
+        text = %(
 #{pull_request.owner} has assigned you on pull request *#{pull_request.title}*.
 Url: #{pull_request.url})
         post_message_as_user(user.channel_id, text)
-      when "closed"
+      when 'closed'
         user = User.find_by(github_username: pull_request.owner)
         return if user.nil?
-        text = %Q(
+        text = %(
 #{pull_request.title} has been closed by #{sender.name}
 Url: #{pull_request.url})
         post_message_as_user(user.channel_id, text)
       end
     end
 
-    def pull_request_review_comment_message
+    def pull_request_review_message
+      parser = GithubWebhookService::Parser.new(review: @payload[:review], pull_request: @payload[:pull_request])
+      review = parser.review
+      reviewer = review.reviewer
+      msg = review.body
+      url = review.url
+      pr = parser.pull_request
+      pr_owner = User.find_by_github_username(pr.owner)
+      state = review.state.tr!('_', ' ')
+      return if pr_owner.nil?
+      text = %(
+Your PR has *#{state}* by #{reviewer}.
+Message: #{msg}
+Pull Request: *#{pr.title}*.
+Url: #{url}
+      )
+      post_message_as_user(pr_owner.channel_id, text)
+    end
+
+    def pull_request_comment_message
       parser = GithubWebhookService::Parser.new(comment: @payload[:comment], pull_request: @payload[:pull_request])
       comment = parser.comment
       pull_request = parser.pull_request
       comment_mention_message(comment.commentter, comment.url, comment.mentioned) if comment.mentioned.present?
       user = User.find_by_github_username(pull_request.owner)
-      return if user.nil? || comment.commentter == "houndci-bot" || pull_request.owner == comment.commentter
-        text = %Q(
-#{comment.commentter} has #{@action} a review comment.
+      return if user.nil? || comment.commentter == 'houndci-bot' || pull_request.owner == comment.commentter
+      text = %(
+#{comment.commentter} has #{@action} a comment on your PR.
 Comment: #{comment.body}.
 Pull Request: *#{pull_request.title}*.
 Url: #{comment.url})
-      post_message_as_user(user.channel_id, text: text)
+      post_message_as_user(user.channel_id, text)
     end
 
     def comment_mention_message(commenter, url, mentioned)
@@ -80,7 +102,7 @@ Url: #{comment.url})
         name.slice!(0)
         user = User.find_by(github_username: name)
         next unless user.present?
-        text = %Q(
+        text = %(
 #{commenter} has mentioned you in a comment.
 Url: #{url})
         post_message_as_user(user.channel_id, text)
