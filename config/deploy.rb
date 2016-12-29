@@ -7,7 +7,7 @@ set :repo_url, 'git@github.com:kfit-dev/fave-bot.git'
 # Default deploy_to directory is /var/www/my_app_name
 # set :deploy_to, '/var/www/my_app_name'
 set :rbenv_type, :system
-set :rbenv_ruby, '2.3.0'
+set :rbenv_ruby, '2.3.1'
 set :rbenv_custom_path, '/home/deploy/.rbenv/'
 set :rbenv_prefix, "RBENV_ROOT=#{fetch(:rbenv_path)} RBENV_VERSION=#{fetch(:rbenv_ruby)} #{fetch(:rbenv_path)}/bin/rbenv exec"
 set :rbenv_map_bins, %w{rake gem bundle ruby rails}
