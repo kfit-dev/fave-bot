@@ -39,11 +39,13 @@ module GithubWebhookService
 
   # payload[:pull_request] section parser
   class PullRequest
-    attr_accessor :title, :owner, :assignee, :url, :merged
+    attr_accessor :title, :owner, :assignee, :url, :merged, :assignees
     def initialize(pull_request:)
+      byebug
       @title = pull_request[:title]
       @owner = pull_request.dig(:user, :login)
       @assignee = pull_request.dig(:assignee, :login)
+      @assignees = pull_request[:assignees].map { |assignee| assignee['login'] }
       @url = pull_request[:html_url]
       @merged = pull_request[:merged]
     end

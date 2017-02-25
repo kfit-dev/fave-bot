@@ -47,12 +47,7 @@ Url: #{comment.url})
       sender = parser.sender
       case @action
       when 'assigned'
-        user = User.find_by(github_username: pull_request.assignee)
-        return if user.nil?
-        text = %(
-#{pull_request.owner} has assigned you on pull request *#{pull_request.title}*.
-Url: #{pull_request.url})
-        post_message_as_user(user.channel_id, text)
+        send_message_to_assignees(pull_request)
       when 'closed'
         user = User.find_by(github_username: pull_request.owner)
         return if user.nil?
@@ -122,6 +117,20 @@ Url: #{url})
     def post_message_as_user(channel, text)
       client = Slack::Web::Client.new
       client.chat_postMessage(channel: channel, text: text, as_user: true)
+    end
+
+    def send_message_to_assignees(pull_request)
+      pull_request.assignees.each do |assignee|
+        user = User.find_by(github_username: assignee)
+        next if user.nil?
+        text = "#{pull_request.owner} has assigned you on pull request *#{pull_request.title}*." \
+               "\nUrl: #{pull_request.url}"
+        post_message_as_user(user.channel_id, unindent(text))
+      end
+    end
+
+    def unindent(s)
+      s.gsub(/^#{s.scan(/^[ \t]+(?=\S)/).min}/, '')
     end
   end
 end
